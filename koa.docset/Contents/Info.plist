@@ -10,5 +10,9 @@
 	<string>koa</string>
 	<key>isDashDocset</key>
 	<true/>
+	<key>dashIndexFilePath</key>
+	<string>index.html</string>
+	<key>DashDocSetFallbackURL</key>
+	<string>https://koajs.com/</string>
 </dict>
 </plist>
