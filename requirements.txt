@@ -1,0 +1,5 @@
+requests>=2.18.4
+jinja2>=2.10
+Markdown>=2.6.11
+beautifulsoup4>=4.6.
+lxml>=4.1.1

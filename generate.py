@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-import sqlite3, requests, zipfile, io, os
+import sqlite3, requests, zipfile, io, os, re
 import jinja2
 import markdown
+from bs4 import BeautifulSoup
 
 KOA_GITHUB_ARCHIVE_URL = "https://github.com/koajs/koa/archive/master.zip"
 KOA_RESOURCES_PATH = "koa.docset/Contents/Resources/"
@@ -43,6 +44,7 @@ MARKDOWN_EXTENSIONS = [
     "markdown.extensions.fenced_code",
 ]
 MARKDOWN_EXTENSION_CONFIGS = {"markdown.extensions.toc": {"anchorlink": True}}
+ANY = re.compile(r".*")
 
 
 def setup_db():
@@ -82,7 +84,7 @@ def get_document():
 
 
 def render2html(md_path):
-    assert os.path.exists(md_path)
+    assert os.path.exists(md_path), md_path
     html_path = os.path.join(
         KOA_RESOURCES_PATH,
         "Documents",
@@ -102,6 +104,29 @@ def render2html(md_path):
         hf.write(doc)
 
 
+def extract_link(cursor, html_path):
+    html_path = os.path.join(KOA_RESOURCES_PATH, "Documents", html_path)
+    assert os.path.exists(html_path), html_path
+    basename = os.path.basename(html_path)
+    with open(html_path, "rt", encoding="utf-8") as f:
+        content = f.read()
+        soup = BeautifulSoup(content, "lxml")
+        for tag in soup.find_all("a", {"href": ANY}, class_="toclink"):
+            name = tag.text.strip()
+            toclink = tag.attrs["href"].strip()
+            if "(" in name:
+                type = "Method"
+            elif "." in name:
+                type = "Attribute"
+            else:
+                type = "Guide"
+            cursor.execute(
+                "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES (?,?,?)",
+                (name, type, basename + toclink),
+            )
+            print("name: {}, type: {}, link: {}".format(name, type, basename + toclink))
+
+
 def main():
     try:
         conn, cur = setup_db()
@@ -110,6 +135,27 @@ def main():
             documents = get_document()
             for document in documents:
                 render2html(document)
+
+        api_files = set()
+        for _, _, filenames in os.walk(
+            os.path.join(KOA_RESOURCES_PATH, "Documents/raw_md/api")
+        ):
+            for file in filter(lambda f: f.endswith(".md"), filenames):
+                html_file = file.replace(".md", ".html")
+                api_files.add(html_file)
+                extract_link(cur, html_file)
+
+        html_files = set()
+        for _, _, filenames in os.walk(os.path.join(KOA_RESOURCES_PATH, "Documents")):
+            html_files.update(filter(lambda f: f.endswith(".html"), filenames))
+
+        no_api_files = html_files - api_files
+        for file in no_api_files:
+            file_name = file.replace(".html", "")
+            cur.execute(
+                "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES (?,?,?)",
+                (file_name, "Guide", file),
+            )
 
         conn.commit()
     finally:
