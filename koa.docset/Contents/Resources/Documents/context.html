@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="default.css" rel="stylesheet">
+    <link href="github.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        code, pre {
+            font-family: monospace;
+        }
+        h1 code,
+        h2 code,
+        h3 code,
+        h4 code,
+        h5 code,
+        h6 code {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1 id="context"><a class="toclink" href="#context">Context</a></h1>
+<p>A Koa Context encapsulates node's <code>request</code> and <code>response</code> objects
+  into a single object which provides many helpful methods for writing
+  web applications and APIs.
+  These operations are used so frequently in HTTP server development
+  that they are added at this level instead of a higher level framework,
+  which would force middleware to re-implement this common functionality.</p>
+<p>A <code>Context</code> is created <em>per</em> request, and is referenced in middleware
+  as the receiver, or the <code>ctx</code> identifier, as shown in the following
+  snippet:</p>
+<div class="codehilite"><pre><span></span><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">async</span> <span class="nx">ctx</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">ctx</span><span class="p">;</span> <span class="c1">// is the Context</span>
+  <span class="nx">ctx</span><span class="p">.</span><span class="nx">request</span><span class="p">;</span> <span class="c1">// is a Koa Request</span>
+  <span class="nx">ctx</span><span class="p">.</span><span class="nx">response</span><span class="p">;</span> <span class="c1">// is a Koa Response</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>Many of the context's accessors and methods simply delegate to their <code>ctx.request</code> or <code>ctx.response</code>
+  equivalents for convenience, and are otherwise identical. For example <code>ctx.type</code> and <code>ctx.length</code>
+  delegate to the <code>response</code> object, and <code>ctx.path</code> and <code>ctx.method</code> delegate to the <code>request</code>.</p>
+<h2 id="api"><a class="toclink" href="#api">API</a></h2>
+<p><code>Context</code> specific methods and accessors.</p>
+<h3 id="ctxreq"><a class="toclink" href="#ctxreq">ctx.req</a></h3>
+<p>Node's <code>request</code> object.</p>
+<h3 id="ctxres"><a class="toclink" href="#ctxres">ctx.res</a></h3>
+<p>Node's <code>response</code> object.</p>
+<p>Bypassing Koa's response handling is <strong>not supported</strong>. Avoid using the following node properties:</p>
+<ul>
+<li><code>res.statusCode</code></li>
+<li><code>res.writeHead()</code></li>
+<li><code>res.write()</code></li>
+<li><code>res.end()</code></li>
+</ul>
+<h3 id="ctxrequest"><a class="toclink" href="#ctxrequest">ctx.request</a></h3>
+<p>A Koa <code>Request</code> object.</p>
+<h3 id="ctxresponse"><a class="toclink" href="#ctxresponse">ctx.response</a></h3>
+<p>A Koa <code>Response</code> object.</p>
+<h3 id="ctxstate"><a class="toclink" href="#ctxstate">ctx.state</a></h3>
+<p>The recommended namespace for passing information through middleware and to your frontend views.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">user</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">User</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+</pre></div>
+
+
+<h3 id="ctxapp"><a class="toclink" href="#ctxapp">ctx.app</a></h3>
+<p>Application instance reference.</p>
+<h3 id="ctxcookiesgetname-options"><a class="toclink" href="#ctxcookiesgetname-options">ctx.cookies.get(name, [options])</a></h3>
+<p>Get cookie <code>name</code> with <code>options</code>:</p>
+<ul>
+<li><code>signed</code> the cookie requested should be signed</li>
+</ul>
+<p>Koa uses the <a href="https://github.com/jed/cookies">cookies</a> module where options are simply passed.</p>
+<h3 id="ctxcookiessetname-value-options"><a class="toclink" href="#ctxcookiessetname-value-options">ctx.cookies.set(name, value, [options])</a></h3>
+<p>Set cookie <code>name</code> to <code>value</code> with <code>options</code>:</p>
+<ul>
+<li><code>maxAge</code> a number representing the milliseconds from Date.now() for expiry</li>
+<li><code>signed</code> sign the cookie value</li>
+<li><code>expires</code> a <code>Date</code> for cookie expiration</li>
+<li><code>path</code> cookie path, <code>/'</code> by default</li>
+<li><code>domain</code> cookie domain</li>
+<li><code>secure</code> secure cookie</li>
+<li><code>httpOnly</code> server-accessible cookie, <strong>true</strong> by default</li>
+<li><code>overwrite</code> a boolean indicating whether to overwrite previously set cookies of the same name (<strong>false</strong> by default). If this is true, all cookies set during the same request with the same name (regardless of path or domain) are filtered out of the Set-Cookie header when setting this cookie.</li>
+</ul>
+<p>Koa uses the <a href="https://github.com/jed/cookies">cookies</a> module where options are simply passed.</p>
+<h3 id="ctxthrowstatus-msg-properties"><a class="toclink" href="#ctxthrowstatus-msg-properties">ctx.throw([status], [msg], [properties])</a></h3>
+<p>Helper method to throw an error with a <code>.status</code> property
+  defaulting to <code>500</code> that will allow Koa to respond appropriately.
+  The following combinations are allowed:</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">400</span><span class="p">);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;name required&#39;</span><span class="p">);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;name required&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">user</span><span class="o">:</span> <span class="nx">user</span> <span class="p">});</span>
+</pre></div>
+
+
+<p>For example <code>ctx.throw(400, 'name required')</code> is equivalent to:</p>
+<div class="codehilite"><pre><span></span><span class="kr">const</span> <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;name required&#39;</span><span class="p">);</span>
+<span class="nx">err</span><span class="p">.</span><span class="nx">status</span> <span class="o">=</span> <span class="mi">400</span><span class="p">;</span>
+<span class="nx">err</span><span class="p">.</span><span class="nx">expose</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+</pre></div>
+
+
+<p>Note that these are user-level errors and are flagged with
+  <code>err.expose</code> meaning the messages are appropriate for
+  client responses, which is typically not the case for
+  error messages since you do not want to leak failure
+  details.</p>
+<p>You may optionally pass a <code>properties</code> object which is merged into the error as-is, useful for decorating machine-friendly errors which are reported to the requester upstream.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s1">&#39;access_denied&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">user</span><span class="o">:</span> <span class="nx">user</span> <span class="p">});</span>
+</pre></div>
+
+
+<p>Koa uses <a href="https://github.com/jshttp/http-errors">http-errors</a> to create errors.</p>
+<h3 id="ctxassertvalue-status-msg-properties"><a class="toclink" href="#ctxassertvalue-status-msg-properties">ctx.assert(value, [status], [msg], [properties])</a></h3>
+<p>Helper method to throw an error similar to <code>.throw()</code>
+  when <code>!value</code>. Similar to node's <a href="http://nodejs.org/api/assert.html">assert()</a>
+  method.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">assert</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">user</span><span class="p">,</span> <span class="mi">401</span><span class="p">,</span> <span class="s1">&#39;User not found. Please login!&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>Koa uses <a href="https://github.com/jshttp/http-assert">http-assert</a> for assertions.</p>
+<h3 id="ctxrespond"><a class="toclink" href="#ctxrespond">ctx.respond</a></h3>
+<p>To bypass Koa's built-in response handling, you may explicitly set <code>ctx.respond = false;</code>. Use this if you want to write to the raw <code>res</code> object instead of letting Koa handle the response for you.</p>
+<p>Note that using this is <strong>not</strong> supported by Koa. This may break intended functionality of Koa middleware and Koa itself. Using this property is considered a hack and is only a convenience to those wishing to use traditional <code>fn(req, res)</code> functions and middleware within Koa.</p>
+<h2 id="request-aliases"><a class="toclink" href="#request-aliases">Request aliases</a></h2>
+<p>The following accessors and alias <a href="request.md">Request</a> equivalents:</p>
+<ul>
+<li><code>ctx.header</code></li>
+<li><code>ctx.headers</code></li>
+<li><code>ctx.method</code></li>
+<li><code>ctx.method=</code></li>
+<li><code>ctx.url</code></li>
+<li><code>ctx.url=</code></li>
+<li><code>ctx.originalUrl</code></li>
+<li><code>ctx.origin</code></li>
+<li><code>ctx.href</code></li>
+<li><code>ctx.path</code></li>
+<li><code>ctx.path=</code></li>
+<li><code>ctx.query</code></li>
+<li><code>ctx.query=</code></li>
+<li><code>ctx.querystring</code></li>
+<li><code>ctx.querystring=</code></li>
+<li><code>ctx.host</code></li>
+<li><code>ctx.hostname</code></li>
+<li><code>ctx.fresh</code></li>
+<li><code>ctx.stale</code></li>
+<li><code>ctx.socket</code></li>
+<li><code>ctx.protocol</code></li>
+<li><code>ctx.secure</code></li>
+<li><code>ctx.ip</code></li>
+<li><code>ctx.ips</code></li>
+<li><code>ctx.subdomains</code></li>
+<li><code>ctx.is()</code></li>
+<li><code>ctx.accepts()</code></li>
+<li><code>ctx.acceptsEncodings()</code></li>
+<li><code>ctx.acceptsCharsets()</code></li>
+<li><code>ctx.acceptsLanguages()</code></li>
+<li><code>ctx.get()</code></li>
+</ul>
+<h2 id="response-aliases"><a class="toclink" href="#response-aliases">Response aliases</a></h2>
+<p>The following accessors and alias <a href="response.md">Response</a> equivalents:</p>
+<ul>
+<li><code>ctx.body</code></li>
+<li><code>ctx.body=</code></li>
+<li><code>ctx.status</code></li>
+<li><code>ctx.status=</code></li>
+<li><code>ctx.message</code></li>
+<li><code>ctx.message=</code></li>
+<li><code>ctx.length=</code></li>
+<li><code>ctx.length</code></li>
+<li><code>ctx.type=</code></li>
+<li><code>ctx.type</code></li>
+<li><code>ctx.headerSent</code></li>
+<li><code>ctx.redirect()</code></li>
+<li><code>ctx.attachment()</code></li>
+<li><code>ctx.set()</code></li>
+<li><code>ctx.append()</code></li>
+<li><code>ctx.remove()</code></li>
+<li><code>ctx.lastModified=</code></li>
+<li><code>ctx.etag=</code></li>
+</ul>
+</div>
+</body>
+</html>

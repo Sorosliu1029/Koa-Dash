@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="default.css" rel="stylesheet">
+    <link href="github.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        code, pre {
+            font-family: monospace;
+        }
+        h1 code,
+        h2 code,
+        h3 code,
+        h4 code,
+        h5 code,
+        h6 code {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1 id="error-handling"><a class="toclink" href="#error-handling">Error Handling</a></h1>
+<h2 id="try-catch"><a class="toclink" href="#try-catch">Try-Catch</a></h2>
+<p>Using async functions means that you can try-catch <code>next</code>.
+  This example adds a <code>.status</code> to all errors:</p>
+<p><code>js
+  app.use(async (ctx, next) =&gt; {
+    try {
+      await next();
+    } catch (err) {
+      err.status = err.statusCode || err.status || 500;
+      throw err;
+    }
+  });</code></p>
+<h3 id="default-error-handler"><a class="toclink" href="#default-error-handler">Default Error Handler</a></h3>
+<p>The default error handler is essentially a try-catch at
+  the very beginning of the middleware chain. To use a
+  different error handler, simply put another try-catch at
+  the beginning of the middleware chain, and handle the error
+  there. However, the default error handler is good enough for
+  most use cases. It will use a status code of <code>err.status</code>,
+  or by default 500. If <code>err.expose</code> is true, then <code>err.message</code>
+  will be the reply. Otherwise, a message generated from the
+  error code will be used (e.g. for the code 500 the message
+  "Internal Server Error" will be used). All headers will be
+  cleared from the request, but any headers in <code>err.headers</code>
+  will then be set. You can use a try-catch, as specified
+  above, to add a header to this list.</p>
+<p>Here is an example of creating your own error handler:</p>
+<div class="codehilite"><pre><span></span><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">async</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">next</span><span class="p">();</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// will only respond with JSON</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">status</span> <span class="o">=</span> <span class="nx">err</span><span class="p">.</span><span class="nx">statusCode</span> <span class="o">||</span> <span class="nx">err</span><span class="p">.</span><span class="nx">status</span> <span class="o">||</span> <span class="mi">500</span><span class="p">;</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="nx">message</span><span class="o">:</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+
+<h2 id="the-error-event"><a class="toclink" href="#the-error-event">The Error Event</a></h2>
+<p>Error event listeners can be specified with <code>app.on('error')</code>.
+  If no error listener is specified, a default error listener
+  is used. Error listener receive all errors that make their
+  way back through the middleware chain, if an error is caught
+  and not thrown again, it will not be passed to the error
+  listener. If no error event listener is specified, then
+  <code>app.onerror</code> will be used, which simply log the error if
+  <code>error.expose</code> is true and <code>app.silent</code> is false.</p>
+</div>
+</body>
+</html>

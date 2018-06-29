@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="default.css" rel="stylesheet">
+    <link href="github.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        code, pre {
+            font-family: monospace;
+        }
+        h1 code,
+        h2 code,
+        h3 code,
+        h4 code,
+        h5 code,
+        h6 code {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1 id="request"><a class="toclink" href="#request">Request</a></h1>
+<p>A Koa <code>Request</code> object is an abstraction on top of node's vanilla request object,
+  providing additional functionality that is useful for every day HTTP server
+  development.</p>
+<h2 id="api"><a class="toclink" href="#api">API</a></h2>
+<h3 id="requestheader"><a class="toclink" href="#requestheader">request.header</a></h3>
+<p>Request header object.</p>
+<h3 id="requestheader_1"><a class="toclink" href="#requestheader_1">request.header=</a></h3>
+<p>Set request header object.</p>
+<h3 id="requestheaders"><a class="toclink" href="#requestheaders">request.headers</a></h3>
+<p>Request header object. Alias as <code>request.header</code>.</p>
+<h3 id="requestheaders_1"><a class="toclink" href="#requestheaders_1">request.headers=</a></h3>
+<p>Set request header object. Alias as <code>request.header=</code>.</p>
+<h3 id="requestmethod"><a class="toclink" href="#requestmethod">request.method</a></h3>
+<p>Request method.</p>
+<h3 id="requestmethod_1"><a class="toclink" href="#requestmethod_1">request.method=</a></h3>
+<p>Set request method, useful for implementing middleware
+  such as <code>methodOverride()</code>.</p>
+<h3 id="requestlength"><a class="toclink" href="#requestlength">request.length</a></h3>
+<p>Return request Content-Length as a number when present, or <code>undefined</code>.</p>
+<h3 id="requesturl"><a class="toclink" href="#requesturl">request.url</a></h3>
+<p>Get request URL.</p>
+<h3 id="requesturl_1"><a class="toclink" href="#requesturl_1">request.url=</a></h3>
+<p>Set request URL, useful for url rewrites.</p>
+<h3 id="requestoriginalurl"><a class="toclink" href="#requestoriginalurl">request.originalUrl</a></h3>
+<p>Get request original URL.</p>
+<h3 id="requestorigin"><a class="toclink" href="#requestorigin">request.origin</a></h3>
+<p>Get origin of URL, include <code>protocol</code> and <code>host</code>.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">origin</span>
+<span class="c1">// =&gt; http://example.com</span>
+</pre></div>
+
+
+<h3 id="requesthref"><a class="toclink" href="#requesthref">request.href</a></h3>
+<p>Get full request URL, include <code>protocol</code>, <code>host</code> and <code>url</code>.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">href</span><span class="p">;</span>
+<span class="c1">// =&gt; http://example.com/foo/bar?q=1</span>
+</pre></div>
+
+
+<h3 id="requestpath"><a class="toclink" href="#requestpath">request.path</a></h3>
+<p>Get request pathname.</p>
+<h3 id="requestpath_1"><a class="toclink" href="#requestpath_1">request.path=</a></h3>
+<p>Set request pathname and retain query-string when present.</p>
+<h3 id="requestquerystring"><a class="toclink" href="#requestquerystring">request.querystring</a></h3>
+<p>Get raw query string void of <code>?</code>.</p>
+<h3 id="requestquerystring_1"><a class="toclink" href="#requestquerystring_1">request.querystring=</a></h3>
+<p>Set raw query string.</p>
+<h3 id="requestsearch"><a class="toclink" href="#requestsearch">request.search</a></h3>
+<p>Get raw query string with the <code>?</code>.</p>
+<h3 id="requestsearch_1"><a class="toclink" href="#requestsearch_1">request.search=</a></h3>
+<p>Set raw query string.</p>
+<h3 id="requesthost"><a class="toclink" href="#requesthost">request.host</a></h3>
+<p>Get host (hostname:port) when present. Supports <code>X-Forwarded-Host</code>
+  when <code>app.proxy</code> is <strong>true</strong>, otherwise <code>Host</code> is used.</p>
+<h3 id="requesthostname"><a class="toclink" href="#requesthostname">request.hostname</a></h3>
+<p>Get hostname when present. Supports <code>X-Forwarded-Host</code>
+  when <code>app.proxy</code> is <strong>true</strong>, otherwise <code>Host</code> is used.</p>
+<p>If host is IPv6, Koa delegates parsing to
+  <a href="https://nodejs.org/dist/latest-v8.x/docs/api/url.html#url_the_whatwg_url_api">WHATWG URL API</a>,
+  <em>Note</em> This may impact performance.</p>
+<h3 id="requesturl_2"><a class="toclink" href="#requesturl_2">request.URL</a></h3>
+<p>Get WHATWG parsed URL object.</p>
+<h3 id="requesttype"><a class="toclink" href="#requesttype">request.type</a></h3>
+<p>Get request <code>Content-Type</code> void of parameters such as "charset".</p>
+<div class="codehilite"><pre><span></span><span class="kr">const</span> <span class="nx">ct</span> <span class="o">=</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">type</span><span class="p">;</span>
+<span class="c1">// =&gt; &quot;image/png&quot;</span>
+</pre></div>
+
+
+<h3 id="requestcharset"><a class="toclink" href="#requestcharset">request.charset</a></h3>
+<p>Get request charset when present, or <code>undefined</code>:</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">charset</span><span class="p">;</span>
+<span class="c1">// =&gt; &quot;utf-8&quot;</span>
+</pre></div>
+
+
+<h3 id="requestquery"><a class="toclink" href="#requestquery">request.query</a></h3>
+<p>Get parsed query-string, returning an empty object when no
+  query-string is present. Note that this getter does <em>not</em>
+  support nested parsing.</p>
+<p>For example "color=blue&amp;size=small":</p>
+<div class="codehilite"><pre><span></span><span class="p">{</span>
+  <span class="nx">color</span><span class="o">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+  <span class="nx">size</span><span class="o">:</span> <span class="s1">&#39;small&#39;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="requestquery_1"><a class="toclink" href="#requestquery_1">request.query=</a></h3>
+<p>Set query-string to the given object. Note that this
+  setter does <em>not</em> support nested objects.</p>
+<div class="codehilite"><pre><span></span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">next</span><span class="o">:</span> <span class="s1">&#39;/login&#39;</span> <span class="p">};</span>
+</pre></div>
+
+
+<h3 id="requestfresh"><a class="toclink" href="#requestfresh">request.fresh</a></h3>
+<p>Check if a request cache is "fresh", aka the contents have not changed. This
+  method is for cache negotiation between <code>If-None-Match</code> / <code>ETag</code>, and <code>If-Modified-Since</code> and <code>Last-Modified</code>. It should be referenced after setting one or more of these response headers.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// freshness check requires status 20x or 304</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">status</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;ETag&#39;</span><span class="p">,</span> <span class="s1">&#39;123&#39;</span><span class="p">);</span>
+
+<span class="c1">// cache is ok</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fresh</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">ctx</span><span class="p">.</span><span class="nx">status</span> <span class="o">=</span> <span class="mi">304</span><span class="p">;</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// cache is stale</span>
+<span class="c1">// fetch new data</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">db</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;something&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<h3 id="requeststale"><a class="toclink" href="#requeststale">request.stale</a></h3>
+<p>Inverse of <code>request.fresh</code>.</p>
+<h3 id="requestprotocol"><a class="toclink" href="#requestprotocol">request.protocol</a></h3>
+<p>Return request protocol, "https" or "http". Supports <code>X-Forwarded-Proto</code>
+  when <code>app.proxy</code> is <strong>true</strong>.</p>
+<h3 id="requestsecure"><a class="toclink" href="#requestsecure">request.secure</a></h3>
+<p>Shorthand for <code>ctx.protocol == "https"</code> to check if a request was
+  issued via TLS.</p>
+<h3 id="requestip"><a class="toclink" href="#requestip">request.ip</a></h3>
+<p>Request remote address. Supports <code>X-Forwarded-For</code> when <code>app.proxy</code>
+  is <strong>true</strong>.</p>
+<h3 id="requestips"><a class="toclink" href="#requestips">request.ips</a></h3>
+<p>When <code>X-Forwarded-For</code> is present and <code>app.proxy</code> is enabled an array
+  of these ips is returned, ordered from upstream -&gt; downstream. When disabled
+  an empty array is returned.</p>
+<h3 id="requestsubdomains"><a class="toclink" href="#requestsubdomains">request.subdomains</a></h3>
+<p>Return subdomains as an array.</p>
+<p>Subdomains are the dot-separated parts of the host before the main domain of
+  the app. By default, the domain of the app is assumed to be the last two
+  parts of the host. This can be changed by setting <code>app.subdomainOffset</code>.</p>
+<p>For example, if the domain is "tobi.ferrets.example.com":
+  If <code>app.subdomainOffset</code> is not set, <code>ctx.subdomains</code> is <code>["ferrets", "tobi"]</code>.
+  If <code>app.subdomainOffset</code> is 3, <code>ctx.subdomains</code> is <code>["tobi"]</code>.</p>
+<h3 id="requestistypes"><a class="toclink" href="#requestistypes">request.is(types...)</a></h3>
+<p>Check if the incoming request contains the "Content-Type"
+  header field, and it contains any of the give mime <code>type</code>s.
+  If there is no request body, <code>null</code> is returned.
+  If there is no content type, or the match fails <code>false</code> is returned.
+  Otherwise, it returns the matching content-type.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// With Content-Type: text/html; charset=utf-8</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;html&#39;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;text/html&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;text/html&#39;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;text/*&#39;</span><span class="p">,</span> <span class="s1">&#39;text/html&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;text/html&#39;</span>
+
+<span class="c1">// When Content-Type is application/json</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="s1">&#39;urlencoded&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;json&#39;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;application/json&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;application/json&#39;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;application/*&#39;</span><span class="p">);</span> <span class="c1">// =&gt; &#39;application/json&#39;</span>
+
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">);</span> <span class="c1">// =&gt; false</span>
+</pre></div>
+
+
+<p>For example if you want to ensure that
+  only images are sent to a given route:</p>
+<div class="codehilite"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s1">&#39;image/*&#39;</span><span class="p">))</span> <span class="p">{</span>
+  <span class="c1">// process</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">415</span><span class="p">,</span> <span class="s1">&#39;images only!&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="content-negotiation"><a class="toclink" href="#content-negotiation">Content Negotiation</a></h3>
+<p>Koa's <code>request</code> object includes helpful content negotiation utilities powered by <a href="http://github.com/expressjs/accepts">accepts</a> and <a href="https://github.com/federomero/negotiator">negotiator</a>. These utilities are:</p>
+<ul>
+<li><code>request.accepts(types)</code></li>
+<li><code>request.acceptsEncodings(types)</code></li>
+<li><code>request.acceptsCharsets(charsets)</code></li>
+<li><code>request.acceptsLanguages(langs)</code></li>
+</ul>
+<p>If no types are supplied, <strong>all</strong> acceptable types are returned.</p>
+<p>If multiple types are supplied, the best match will be returned. If no matches are found, a <code>false</code> is returned, and you should send a <code>406 "Not Acceptable"</code> response to the client.</p>
+<p>In the case of missing accept headers where any type is acceptable, the first type will be returned. Thus, the order of types you supply is important.</p>
+<h3 id="requestacceptstypes"><a class="toclink" href="#requestacceptstypes">request.accepts(types)</a></h3>
+<p>Check if the given <code>type(s)</code> is acceptable, returning the best match when true, otherwise <code>false</code>. The <code>type</code> value may be one or more mime type string
+  such as "application/json", the extension name
+  such as "json", or an array <code>["json", "html", "text/plain"]</code>.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept: text/html</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;html&quot;</span>
+
+<span class="c1">// Accept: text/*, application/json</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;html&quot;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;text/html&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;text/html&quot;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;json&quot;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;application/json&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;application/json&quot;</span>
+
+<span class="c1">// Accept: text/*, application/json</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;image/png&#39;</span><span class="p">);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;png&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; false</span>
+
+<span class="c1">// Accept: text/*;q=.5, application/json</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">([</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">]);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;json&quot;</span>
+
+<span class="c1">// No Accept header</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;html&quot;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;json&quot;</span>
+</pre></div>
+
+
+<p>You may call <code>ctx.accepts()</code> as many times as you like,
+  or use a switch:</p>
+<div class="codehilite"><pre><span></span><span class="k">switch</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">accepts</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">))</span> <span class="p">{</span>
+  <span class="k">case</span> <span class="s1">&#39;json&#39;</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+  <span class="k">case</span> <span class="s1">&#39;html&#39;</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+  <span class="k">case</span> <span class="s1">&#39;text&#39;</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+  <span class="k">default</span><span class="o">:</span> <span class="nx">ctx</span><span class="p">.</span><span class="k">throw</span><span class="p">(</span><span class="mi">406</span><span class="p">,</span> <span class="s1">&#39;json, html, or text only&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="requestacceptsencodingsencodings"><a class="toclink" href="#requestacceptsencodingsencodings">request.acceptsEncodings(encodings)</a></h3>
+<p>Check if <code>encodings</code> are acceptable, returning the best match when true, otherwise <code>false</code>. Note that you should include <code>identity</code> as one of the encodings!</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Encoding: gzip</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsEncodings</span><span class="p">(</span><span class="s1">&#39;gzip&#39;</span><span class="p">,</span> <span class="s1">&#39;deflate&#39;</span><span class="p">,</span> <span class="s1">&#39;identity&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;gzip&quot;</span>
+
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsEncodings</span><span class="p">([</span><span class="s1">&#39;gzip&#39;</span><span class="p">,</span> <span class="s1">&#39;deflate&#39;</span><span class="p">,</span> <span class="s1">&#39;identity&#39;</span><span class="p">]);</span>
+<span class="c1">// =&gt; &quot;gzip&quot;</span>
+</pre></div>
+
+
+<p>When no arguments are given all accepted encodings
+  are returned as an array:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Encoding: gzip, deflate</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsEncodings</span><span class="p">();</span>
+<span class="c1">// =&gt; [&quot;gzip&quot;, &quot;deflate&quot;, &quot;identity&quot;]</span>
+</pre></div>
+
+
+<p>Note that the <code>identity</code> encoding (which means no encoding) could be unacceptable if the client explicitly sends <code>identity;q=0</code>. Although this is an edge case, you should still handle the case where this method returns <code>false</code>.</p>
+<h3 id="requestacceptscharsetscharsets"><a class="toclink" href="#requestacceptscharsetscharsets">request.acceptsCharsets(charsets)</a></h3>
+<p>Check if <code>charsets</code> are acceptable, returning
+  the best match when true, otherwise <code>false</code>.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Charset: utf-8, iso-8859-1;q=0.2, utf-7;q=0.5</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsCharsets</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-7&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;utf-8&quot;</span>
+
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsCharsets</span><span class="p">([</span><span class="s1">&#39;utf-7&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">]);</span>
+<span class="c1">// =&gt; &quot;utf-8&quot;</span>
+</pre></div>
+
+
+<p>When no arguments are given all accepted charsets
+  are returned as an array:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Charset: utf-8, iso-8859-1;q=0.2, utf-7;q=0.5</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsCharsets</span><span class="p">();</span>
+<span class="c1">// =&gt; [&quot;utf-8&quot;, &quot;utf-7&quot;, &quot;iso-8859-1&quot;]</span>
+</pre></div>
+
+
+<h3 id="requestacceptslanguageslangs"><a class="toclink" href="#requestacceptslanguageslangs">request.acceptsLanguages(langs)</a></h3>
+<p>Check if <code>langs</code> are acceptable, returning
+  the best match when true, otherwise <code>false</code>.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Language: en;q=0.8, es, pt</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsLanguages</span><span class="p">(</span><span class="s1">&#39;es&#39;</span><span class="p">,</span> <span class="s1">&#39;en&#39;</span><span class="p">);</span>
+<span class="c1">// =&gt; &quot;es&quot;</span>
+
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsLanguages</span><span class="p">([</span><span class="s1">&#39;en&#39;</span><span class="p">,</span> <span class="s1">&#39;es&#39;</span><span class="p">]);</span>
+<span class="c1">// =&gt; &quot;es&quot;</span>
+</pre></div>
+
+
+<p>When no arguments are given all accepted languages
+  are returned as an array:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Accept-Language: en;q=0.8, es, pt</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">acceptsLanguages</span><span class="p">();</span>
+<span class="c1">// =&gt; [&quot;es&quot;, &quot;pt&quot;, &quot;en&quot;]</span>
+</pre></div>
+
+
+<h3 id="requestidempotent"><a class="toclink" href="#requestidempotent">request.idempotent</a></h3>
+<p>Check if the request is idempotent.</p>
+<h3 id="requestsocket"><a class="toclink" href="#requestsocket">request.socket</a></h3>
+<p>Return the request socket.</p>
+<h3 id="requestgetfield"><a class="toclink" href="#requestgetfield">request.get(field)</a></h3>
+<p>Return request header.</p>
+</div>
+</body>
+</html>

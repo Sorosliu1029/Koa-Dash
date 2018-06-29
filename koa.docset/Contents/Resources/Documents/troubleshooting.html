@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="default.css" rel="stylesheet">
+    <link href="github.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        code, pre {
+            font-family: monospace;
+        }
+        h1 code,
+        h2 code,
+        h3 code,
+        h4 code,
+        h5 code,
+        h6 code {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1 id="troubleshooting-koa"><a class="toclink" href="#troubleshooting-koa">Troubleshooting Koa</a></h1>
+<ul>
+<li><a href="#whenever-i-try-to-access-my-route-it-sends-back-a-404">Whenever I try to access my route, it sends back a 404</a></li>
+<li><a href="#my-response-or-context-changes-have-no-effect">My response or context changes have no effect</a></li>
+<li><a href="#my-middleware-is-not-called">My middleware is not called</a></li>
+</ul>
+<p>See also <a href="guide.md#debugging-koa">debugging Koa</a>.</p>
+<p>If you encounter a problem and later learn how to fix it, and think others might also encounter that problem, please 
+consider contributing to this documentation.</p>
+<h2 id="whenever-i-try-to-access-my-route-it-sends-back-a-404"><a class="toclink" href="#whenever-i-try-to-access-my-route-it-sends-back-a-404">Whenever I try to access my route, it sends back a 404</a></h2>
+<p>This is a common but troublesome problem when working with Koa middleware. First, it is critical to understand when Koa generates a 404. Koa does not care which or how much middleware was run, in many cases a 200 and 404 trigger the same number of middleware. Instead, the default status for any response is 404. The most obvious way this is changed is through <code>ctx.status</code>. However, if <code>ctx.body</code> is set when the status has not been explicitly defined (through <code>ctx.status</code>), the status is set to 200. This explains why simply setting the body results in a 200. Once the middleware is done (when the middleware and any returned promises are complete), Koa sends out the response. After that, nothing can alter the response. If it was a 404 at the time, it will be a 404 at the end, even if <code>ctx.status</code> or <code>ctx.body</code> are set afterwords.</p>
+<p>Even though we now understand the basis of a 404, it might not be as clear why a 404 is generated in a specific case. This can be especially troublesome when it seems that <code>ctx.status</code> or <code>ctx.body</code> are set. </p>
+<p>The unexpected 404 is a specific symptom of one of these more general problems:</p>
+<ul>
+<li><a href="#my-response-or-context-changes-have-no-effect">My response or context changes have no effect</a></li>
+<li><a href="#my-middleware-is-not-called">My middleware is not called</a></li>
+</ul>
+<h2 id="my-response-or-context-changes-have-no-effect"><a class="toclink" href="#my-response-or-context-changes-have-no-effect">My response or context changes have no effect</a></h2>
+<p>This can be caused when the response is sent before the code making the change is
+executed.  If the change is to the <code>ctx.body</code> or <code>ctx.status</code> setter, this can cause a 404 and
+is by far the most common cause of these problems.</p>
+<h3 id="problematic-code"><a class="toclink" href="#problematic-code">Problematic code</a></h3>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>When used, this route will always send back a 404, even though <code>ctx.body</code> is set.</p>
+<p>The same behavior would occur in this <code>async</code> version:</p>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<h3 id="cause"><a class="toclink" href="#cause">Cause</a></h3>
+<p><code>ctx.body</code> is not set until <em>after</em> the response has been sent. The code doesn't tell Koa to wait for the database to return the record. Koa sends the response after the middleware has been run, but not after the callback inside the middleware has been run. In the gap there, <code>ctx.body</code> has not yet been set, so Koa responds with a 404.</p>
+<h3 id="identifying-this-as-the-issue"><a class="toclink" href="#identifying-this-as-the-issue">Identifying this as the issue</a></h3>
+<p>Adding another piece of middleware and some logging can be extremely helpful in identifying this issue.</p>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Middleware done&#39;</span><span class="p">);</span> 
+  <span class="p">});</span> 
+<span class="p">});</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Body set&#39;</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>If you see this in the logs:</p>
+<div class="codehilite"><pre><span></span>Middleware done 
+Body set
+</pre></div>
+
+
+<p>It means that the body is being set after the middleware is done, and after the response has been sent. If you see only one or none of these logs, proceed to <a href="#my-middleware-is-not-called">My middleware is not called</a>. If they are in the right order, make sure you haven't explicitly set the status to 404, make sure that it actually is a 404, and if that fails feel free to ask for help.</p>
+<h3 id="solution"><a class="toclink" href="#solution">Solution</a></h3>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>Returning the promise given by the database interface tells Koa to wait for the promise to finish before responding. At that time, the body will have been set. This results in Koa sending back a 200 with a proper response.</p>
+<p>The fix in the <code>async</code> version is to add an <code>await</code> statement:</p>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">await</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<h2 id="my-middleware-is-not-called"><a class="toclink" href="#my-middleware-is-not-called">My middleware is not called</a></h2>
+<p>This can be due to an interrupted chain of middleware calls.  This can cause a 404 if the
+middleware that is skipped is responsible for the <code>ctx.body</code> or <code>ctx.status</code> setter.
+This is less common than <a href="#my-response-or-context-changes-have-no-effect">My response or context changes have no effect</a>,
+but it can be a much bigger pain to troubleshoot.</p>
+<h3 id="problematic-code_1"><a class="toclink" href="#problematic-code_1">Problematic code</a></h3>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Don&#39;t Repeat Yourself! Let&#39;s parse the ID here for all our middleware</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<h3 id="cause_1"><a class="toclink" href="#cause_1">Cause</a></h3>
+<p>In the code above, the book is never fetched from the database, and in fact our route was never called. Look closely at our helper middleware. We forgot to <code>return next()</code>! This causes the middleware flow to never reach our route, ending our "helper" middleware.</p>
+<h3 id="identifying-this-as-the-issue_1"><a class="toclink" href="#identifying-this-as-the-issue_1">Identifying this as the issue</a></h3>
+<p>Identifying this problem is easier than most, add a log at the beginning of the route. If it doesn't trigger, your route was never reached in the middleware chain.</p>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Don&#39;t Repeat Yourself! Let&#39;s parse the ID here for all our middleware</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Route called&#39;</span><span class="p">);</span> <span class="c1">// Never happens</span>
+  <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>To find the middleware causing the problem, try adding logging at various points in the middleware chain.</p>
+<h3 id="solution_1"><a class="toclink" href="#solution_1">Solution</a></h3>
+<p>The solution for this is rather easy, simply add <code>return next()</code> to the end of your helper middleware.</p>
+<div class="codehilite"><pre><span></span><span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">next</span><span class="p">();</span>
+<span class="p">});</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/fetch&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Book</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">id</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">book</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">book</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</body>
+</html>

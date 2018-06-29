@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="default.css" rel="stylesheet">
+    <link href="github.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        code, pre {
+            font-family: monospace;
+        }
+        h1 code,
+        h2 code,
+        h3 code,
+        h4 code,
+        h5 code,
+        h6 code {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<p>THIS DOCUMENT IS IN PROGRESS. THIS PARAGRAPH SHALL BE REMOVED WHEN THIS DOCUMENT IS DONE.</p>
+<h1 id="koa-vs-express"><a class="toclink" href="#koa-vs-express">Koa vs Express</a></h1>
+<p>Philosophically, Koa aims to "fix and replace node", whereas Express "augments node".
+  Koa uses promises and async functions to rid apps of callback hell and simplify error handling.
+  It exposes its own <code>ctx.request</code> and <code>ctx.response</code> objects instead of node's <code>req</code> and <code>res</code> objects.</p>
+<p>Express, on the other hand, augments node's <code>req</code> and <code>res</code> objects with additional properties and methods
+  and includes many other "framework" features, such as routing and templating, which Koa does not.</p>
+<p>Thus, Koa can be viewed as an abstraction of node.js's <code>http</code> modules, where as Express is an application framework for node.js.</p>
+<table>
+<thead>
+<tr>
+<th align="right">Feature</th>
+<th>Koa</th>
+<th>Express</th>
+<th>Connect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">Middleware Kernel</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td align="right">Routing</td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td align="right">Templating</td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td align="right">Sending Files</td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td align="right">JSONP</td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Thus, if you'd like to be closer to node.js and traditional node.js-style coding, you probably want to stick to Connect/Express or similar frameworks.
+  If you want to get rid of callbacks, use Koa.</p>
+<p>As result of this different philosophy is that traditional node.js "middleware", i.e. functions of the form <code>(req, res, next)</code>, are incompatible with Koa. Your application will essentially have to be rewritten from the ground, up.</p>
+<h2 id="does-koa-replace-express"><a class="toclink" href="#does-koa-replace-express">Does Koa replace Express?</a></h2>
+<p>It's more like Connect, but a lot of the Express goodies
+  were moved to the middleware level in Koa to help form
+  a stronger foundation. This makes middleware more enjoyable
+  and less error-prone to write, for the entire stack, not
+  just the end application code.</p>
+<p>Typically many middleware would
+  re-implement similar features, or even worse incorrectly implement them,
+  when features like signed cookie secrets among others are typically application-specific,
+  not middleware specific.</p>
+<h2 id="does-koa-replace-connect"><a class="toclink" href="#does-koa-replace-connect">Does Koa replace Connect?</a></h2>
+<p>No, just a different take on similar functionality
+  now that generators allow us to write code with less
+  callbacks. Connect is equally capable, and some may still prefer it,
+  it's up to what you prefer.</p>
+<h2 id="why-isnt-koa-just-express-40"><a class="toclink" href="#why-isnt-koa-just-express-40">Why isn't Koa just Express 4.0?</a></h2>
+<p>Koa is a pretty large departure from what people know about Express,
+  the design is fundamentally much different, so the migration from
+  Express 3.0 to this Express 4.0 would effectively mean rewriting
+  the entire application, so we thought it would be more appropriate
+  to create a new library.</p>
+<h2 id="how-is-koa-different-than-connectexpress"><a class="toclink" href="#how-is-koa-different-than-connectexpress">How is Koa different than Connect/Express?</a></h2>
+<h3 id="promises-based-control-flow"><a class="toclink" href="#promises-based-control-flow">Promises-based control flow</a></h3>
+<p>No callback hell.</p>
+<p>Better error handling through try/catch.</p>
+<p>No need for domains.</p>
+<h3 id="koa-is-barebones"><a class="toclink" href="#koa-is-barebones">Koa is barebones</a></h3>
+<p>Unlike both Connect and Express, Koa does not include any middleware.</p>
+<p>Unlike Express, routing is not provided.</p>
+<p>Unlike Express, many convenience utilities are not provided. For example, sending files.</p>
+<p>Koa is more modular.</p>
+<h3 id="koa-relies-less-on-middleware"><a class="toclink" href="#koa-relies-less-on-middleware">Koa relies less on middleware</a></h3>
+<p>For example, instead of a "body parsing" middleware, you would instead use a body parsing function.</p>
+<h3 id="koa-abstracts-nodes-requestresponse"><a class="toclink" href="#koa-abstracts-nodes-requestresponse">Koa abstracts node's request/response</a></h3>
+<p>Less hackery.</p>
+<p>Better user experience.</p>
+<p>Proper stream handling.</p>
+<h3 id="koa-routing-third-party-libraries-support"><a class="toclink" href="#koa-routing-third-party-libraries-support">Koa routing (third party libraries support)</a></h3>
+<p>Since Express comes with its own routing, but Koa does not have
+  any in-built routing, but there are third party libraries available
+  koa-router and koa-route for routing.
+  Similarly just like we have helmet for security in Express, for Koa
+  we have koa-helmet available and the list goes on for Koa third
+  party available libraries.</p>
+</div>
+</body>
+</html>
